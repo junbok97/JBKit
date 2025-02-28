@@ -15,7 +15,8 @@ let package = Package(
         .library(name: "JBManager", targets: ["JBManager"]),
         .library(name: "JBUtil", targets: ["JBUtil"]),
         .library(name: "MoyaExt", targets: ["MoyaExt"]),
-        .library(name: "RIBsExt", targets: ["RIBsExt"])
+        .library(name: "RIBsExt", targets: ["RIBsExt"]),
+        .library(name: "ResourceKit", targets: ["ResourceKit"])
     ],
     dependencies: [
         .package(url: "https://github.com/uber/RIBs-iOS.git", from: "0.16.3"),
@@ -36,6 +37,7 @@ let package = Package(
             dependencies: [
                 .product(name: "RIBs", package: "RIBs-iOS")
             ]
-        )
+        ),
+        .target(name: "ResourceKit")
     ]
 )
