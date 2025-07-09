@@ -10,55 +10,101 @@ import RIBs
 
 
 public extension ViewControllable {
-
+    
     func present(
         _ viewControllable: ViewControllable,
         animated: Bool,
         completion: (() -> Void)? = nil
     ) {
-        uiviewController.present(viewControllable.uiviewController, animated: animated, completion: completion)
+        uiviewController.present(
+            viewControllable.uiviewController,
+            animated: animated,
+            completion: completion
+        )
     }
     
-    func pushViewController(_ viewControllable: ViewControllable, animated: Bool) {
+    func pushViewController(
+        _ viewControllable: ViewControllable,
+        animated: Bool
+    ) {
         if let nav = self.uiviewController as? UINavigationController {
-            nav.pushViewController(viewControllable.uiviewController, animated: animated)
+            nav.pushViewController(
+                viewControllable.uiviewController,
+                animated: animated
+            )
         } else {
-            self.uiviewController.navigationController?.pushViewController(viewControllable.uiviewController, animated: animated)
+            uiviewController.navigationController?
+                .pushViewController(
+                    viewControllable.uiviewController,
+                    animated: animated
+                )
         }
     }
     
-    func setViewControllers(_ viewControllables: [ViewControllable], animated: Bool) {
+    func setViewControllers(
+        _ viewControllables: [ViewControllable],
+        animated: Bool
+    ) {
         if let navigationController = uiviewController as? UINavigationController {
-            navigationController.setViewControllers(viewControllables.map(\.uiviewController), animated: animated)
+            navigationController.setViewControllers(
+                viewControllables.map(\.uiviewController),
+                animated: animated
+            )
         } else {
-            uiviewController.navigationController?.setViewControllers(viewControllables.map(\.uiviewController), animated: animated)
+            uiviewController.navigationController?
+                .setViewControllers(
+                    viewControllables.map(\.uiviewController),
+                    animated: animated
+                )
+        }
+    }
+    
+    func dismiss(
+        animated: Bool,
+        completion: (() -> Void)?
+    ) {
+        uiviewController.resign()
+        uiviewController.dismiss(animated: animated, completion: completion)
+    }
+    
+    func popViewController(
+        animated: Bool,
+        completion: (() -> Void)? = nil
+    ) {
+        if let navigationController = uiviewController as? UINavigationController {
+            navigationController.topViewController?.resign()
+            navigationController.popViewController(animated: animated, completion: completion)
+        } else {
+            uiviewController.navigationController?.topViewController?.resign()
+            uiviewController.navigationController?.popViewController(animated: animated, completion: completion)
+        }
+    }
+    
+    func popViewController(
+        _ viewControllable: ViewControllable,
+        animated: Bool,
+        completion: (() -> Void)? = nil
+    ) {
+        let navigationController = uiviewController as? UINavigationController ?? uiviewController.navigationController
+        
+        if navigationController?.topViewController == viewControllable.uiviewController {
+            popViewController(animated: animated, completion: completion)
+        } else {
+            completion?()
         }
     }
 
-    func dismiss(animated: Bool, completion: (() -> Void)?) {
-        self.uiviewController.resign()
-        self.uiviewController.dismiss(animated: animated, completion: completion)
-    }
-    
-    func popViewController(animated: Bool) {
-        if let navigationController = uiviewController as? UINavigationController {
-            navigationController.topViewController?.resign()
-            navigationController.popViewController(animated: animated)
-        } else {
-            uiviewController.navigationController?.topViewController?.resign()
-            uiviewController.navigationController?.popViewController(animated: animated)
-        }
-    }
-    
     func popToRoot(animated: Bool) {
-        if let nav = self.uiviewController as? UINavigationController {
+        if let nav = uiviewController as? UINavigationController {
             nav.popToRootViewController(animated: animated)
         } else {
-            self.uiviewController.navigationController?.popToRootViewController(animated: animated)
+            uiviewController.navigationController?.topViewController?.resign()
+            uiviewController.navigationController?.popToRootViewController(animated: animated)
         }
     }
     
 }
+
 
 private extension UIViewController {
     
@@ -72,3 +118,19 @@ private extension UIViewController {
     
 }
 
+
+
+private extension UINavigationController {
+    
+    func popViewController(animated: Bool, completion: (() -> Void)?) {
+        popViewController(animated: animated)
+        guard animated, let coordinator = transitionCoordinator else {
+            DispatchQueue.main.async {
+                completion?()
+            }
+            return
+        }
+        coordinator.animate(alongsideTransition: nil) { _ in completion?() }
+    }
+    
+}

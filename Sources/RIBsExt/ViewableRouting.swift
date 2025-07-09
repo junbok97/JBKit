@@ -19,21 +19,34 @@ public extension ViewableRouting {
         attachChild(router)
     }
     
-    func dismissRouter(_ router: ViewableRouting, animated: Bool, completion: (() -> Void)? = nil) {
+    func dismissRouter(
+        _ router: ViewableRouting,
+        animated: Bool,
+        completion: (() -> Void)? = nil
+    ) {
         viewControllable.dismiss(animated: animated, completion: completion)
         detachChild(router)
     }
     
-    func pushRouter(_ router: ViewableRouting, animated: Bool) {
+    func pushRouter(
+        _ router: ViewableRouting,
+        animated: Bool
+    ) {
         viewControllable.pushViewController(router.viewControllable, animated: animated)
         attachChild(router)
     }
     
-    func popRouter(_ router: ViewableRouting, animated: Bool, isSwipeBack: Bool) {
-        if isSwipeBack == false {
-            viewControllable.popViewController(animated: animated)
-        }
-        detachChild(router)
+    func popRouter(
+        _ router: ViewableRouting,
+        animated: Bool,
+        isSwipeBack: Bool = false,
+        completion: (() -> Void)? = nil
+    ) {
+        isSwipeBack ? detachChild(router) : viewControllable.popViewController(
+            router.viewControllable,
+            animated: animated,
+            completion: completion
+        )
     }
     
     func setRouters(_ routers: [ViewableRouting], animated: Bool) {
